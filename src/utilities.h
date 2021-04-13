@@ -1,4 +1,4 @@
-// Copied from Phoebe https://github.com/mir-group/phoebe,  April 12, 2021
+// Copied from Phoebe https://github.com/mir-group/phoebe, development branch, April 12, 2021
 
 #ifndef UTILS_H
 #define UTILS_H
