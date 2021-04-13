@@ -134,17 +134,26 @@ set(FLARE_SOURCES
     src/flare_pp/kernels/kernel.cpp
     src/flare_pp/kernels/normalized_dot_product.cpp
     src/flare_pp/kernels/norm_dot_icm.cpp
-    src/flare_pp/kernels/squared_exponential.cpp)
+    src/flare_pp/kernels/squared_exponential.cpp
+    src/exceptions.cpp
+    src/algebra/Matrix.cpp
+    src/algebra/PMatrix.cpp
+    src/algebra/SMatrix.cpp
+    src/mpi/mpiController.cpp
+    src/mpi/mpiHelper.cpp)
 
 set(PYBIND_SOURCES
     src/ace_binding.cpp)
 
 # Include sources.
 include_directories(
+  src
   src/flare_pp
   src/flare_pp/descriptors
   src/flare_pp/kernels
-  src/flare_pp/bffs)
+  src/flare_pp/bffs
+  src/algebra
+  src/mpi)
 
 # Create flare library.
 # Should be static to avoid issues with pip installation.
@@ -152,6 +161,65 @@ include_directories(
 add_library(flare STATIC ${FLARE_SOURCES})
 set_target_properties(flare PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_dependencies(flare eigen_project)
+
+################ PARALLEL ####################
+# build with MPI and scalapack - adapted from Phoebe's CMakeLists.txt
+if (MPI_AVAIL)
+  find_package(MPI REQUIRED)
+  target_link_libraries(flare MPI::MPI_CXX)
+  add_definitions("-DMPI_AVAIL") # this sets turns on ifdefs for mpi in the cpp
+
+  find_library(SCALAPACK_LIB NAMES scalapack scalapack-openmpi mkl_scalapack_lp64 PATHS ENV LD_LIBRARY_PATH)
+  if(${SCALAPACK_LIB} MATCHES NOTFOUND)
+      ExternalProject_Add(scalapack_dep
+          BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/scalapack_build
+          SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/scalapack_src
+          GIT_REPOSITORY https://github.com/Reference-ScaLAPACK/scalapack.git
+          INSTALL_COMMAND ""
+          UPDATE_COMMAND ""
+          CMAKE_ARGS
+              -DCMAKE_BUILD_TYPE=Release
+              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+              -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+          )
+      set(SCALAPACK_LIB scalapack)
+      message(WARNING "No SCALAPACK library found in CMAKE_LIBRARY_PATH, building our own.")
+      add_dependencies(flare scalapack_dep)
+  else()
+      if(${SCALAPACK_LIB} MATCHES mkl)
+          if("${MPI_CXX_LIBRARIES}" MATCHES openmpi)
+              find_library(BLACS_LIB NAMES mkl_blacs_openmpi_lp64 PATHS ENV LD_LIBRARY_PATH)
+          elseif("${MPI_CXX_LIBRARIES}" MATCHES intel)
+              find_library(BLACS_LIB NAMES mkl_blacs_intelmpi_lp64 PATHS ENV LD_LIBRARY_PATH)
+          else()
+              message(FATAL_ERROR "Confused by MPI library when looking for BLACS.")
+          endif()
+          if(${BLACS_LIB} MATCHES NOTFOUND)
+              message(FATAL_ERROR "Found Intel SCALAPACK but not BLACS")
+          endif()
+          message(STATUS "Found BLACS: ${BLACS_LIB}")
+      endif()
+      message(STATUS "Found SCALAPACK: ${SCALAPACK_LIB}")
+  endif()
+
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+  include_directories(${BLAS_INCLUDE_DIR})
+  include_directories(${LAPACK_INCLUDE_DIR})
+  ## Very important to link scalapack before blas and lapack
+  target_link_libraries(flare ${SCALAPACK_LIB} ${BLACS_LIB} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} -lgfortran)
+
+else()
+
+  ## even for the serial version, we require lapack
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+  include_directories(${BLAS_INCLUDE_DIR})
+  include_directories(${LAPACK_INCLUDE_DIR})
+  target_link_libraries(flare ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} -lgfortran)
+
+endif()
 
 # Link to json.
 target_link_libraries(flare PUBLIC nlohmann_json::nlohmann_json)
