@@ -4,7 +4,6 @@
 #include <chrono>
 #include <complex>
 #include <vector>
-#include "eigen.h"
 #include <tuple>
 #include "exceptions.h"
 

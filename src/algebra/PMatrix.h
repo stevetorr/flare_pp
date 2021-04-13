@@ -5,7 +5,6 @@
 #include <vector>
 #include "Blacs.h"
 #include "exceptions.h"
-#include "constants.h"
 #include "mpiHelper.h"
 
 #include "SMatrix.h"
