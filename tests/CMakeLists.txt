@@ -6,9 +6,10 @@ add_executable(
   test_structure.cpp
   test_n_body.cpp
   test_sparse_gp.cpp
+  test_parallel_sgp.cpp
   test_descriptor.cpp
   test_json.cpp
 )
 
-include_directories(../src/flare_pp)
+include_directories(../src/flare_pp ../src)
 target_link_libraries(tests PUBLIC gtest gtest_main flare)
