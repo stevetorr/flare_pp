@@ -1,5 +1,4 @@
 #include "parallel_sgp.h"
-
 #include "mpiHelper.h"
 #include <algorithm> // Random shuffle
 #include <chrono>
@@ -90,10 +89,10 @@ void ParallelSGP::build(const std::vector<Eigen::MatrixXd> &training_cells,
 
   // Create distributed matrices
   int A_numBlockRows = std::min((int)mpi->getSize(), f_size + u_size);
-  A = Matrix<double>(f_size + u_size, u_size, A_numBlockRows, 1, isDistributed);
-  y = Matrix<double>(f_size + u_size, 1, A_numBlockRows, 1, isDistributed);
+//  A = Matrix<double>(f_size + u_size, u_size, A_numBlockRows, 1, isDistributed);
+//  y = Matrix<double>(f_size + u_size, 1, A_numBlockRows, 1, isDistributed);
   int Kuu_numBlockRows = std::min((int)mpi->getSize(), f_size + u_size);
-  Kuu = Matrix<double>(u_size, u_size, Kuu_numBlockRows, 1, isDistributed);
+//  Kuu = Matrix<double>(u_size, u_size, Kuu_numBlockRows, 1, isDistributed);
   
 
 //  // Store square root of noise vector.

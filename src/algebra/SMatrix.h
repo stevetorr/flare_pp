@@ -4,7 +4,7 @@
 #include <tuple>
 #include <vector>
 
-#include "Blas.h"
+//#include "Blas.h"
 #include "exceptions.h"
 
 /** Class for managing a (serial) matrix stored in memory.

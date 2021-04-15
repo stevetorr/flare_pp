@@ -66,7 +66,6 @@ include_directories(${json_SOURCE_DIR})
 
 # Eigen3
 ################################################################################
-
 ExternalProject_Add(
     eigen_project
     SOURCE_DIR "${CMAKE_BINARY_DIR}/External/Eigen3"
@@ -139,7 +138,6 @@ set(FLARE_SOURCES
     src/exceptions.cpp
     src/algebra/Matrix.cpp
     src/algebra/PMatrix.cpp
-    src/algebra/SMatrix.cpp
     src/mpi/mpiController.cpp
     src/mpi/mpiHelper.cpp)
 

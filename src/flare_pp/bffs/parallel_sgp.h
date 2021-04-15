@@ -1,16 +1,16 @@
 #ifndef PARALLEL_SGP_H
 #define PARALLEL_SGP_H
 
-#include "descriptor.h"
-#include "kernel.h"
-#include "structure.h"
 #include "exceptions.h"
 #include "utilities.h"
 #include "Matrix.h"
-#include <Eigen/Dense>
+#include "descriptor.h"
+#include "kernel.h"
+#include "structure.h"
 #include <vector>
 #include <nlohmann/json.hpp>
 #include "json.h"
+
 
 class ParallelSGP {
 public:
